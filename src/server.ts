@@ -88,7 +88,7 @@ export class JsExpressServer {
 
     use(module: ServerModule | any): any {
         if(typeof module['getRootInstanceType'] == 'function') {
-            if(module['getRootInstanceType'] == ServerModule.ROOT_INSTANCE_TYPE) {
+            if(module['getRootInstanceType']() == ServerModule.ROOT_INSTANCE_TYPE) {
                 const serverModule: ServerModule = module as ServerModule;
                 serverModule.attachTo(this);
                 i<ServerModule[]>(this, C_SERVER_MODULES).push(serverModule);

@@ -4,7 +4,7 @@ import {Request, Response} from "express";
 export class ServerModule {
     static ROOT_INSTANCE_TYPE: string = 'js-express-server:ServerModule';
 
-    get getRootInstanceType() {
+    getRootInstanceType() {
         return 'js-express-server:ServerModule'
     }
 
