@@ -94,7 +94,7 @@ export class JsExpressServer {
     }
 
     get lambdaHandler(): any {
-        return (event, context, resolutionMode, callback) => i<any>(this, C_AWS_SERVERLESS_EXPRESS).proxy(i<Express>(this, C_EXPRESS_APP), event, context, resolutionMode, callback);
+        return (event, context, resolutionMode, callback) => i<any>(this, C_AWS_SERVERLESS_EXPRESS).proxy(i<Express>(this, C_SERVER), event, context, resolutionMode, callback);
     }
 
     get onerror(): ErrorHandlerType | null {
