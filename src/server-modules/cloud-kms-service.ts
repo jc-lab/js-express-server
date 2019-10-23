@@ -26,6 +26,16 @@ export interface GenerateDataKeyResponse {
     cipherText?: CiphertextType;
 }
 
+export interface EncryptParam {
+    keyId: string,
+    plainText: PlaintextType
+}
+
+export interface EncryptResponse {
+    keyId?: string;
+    cipherText: CiphertextType;
+}
+
 export interface DecryptParam {
     keyId?: string,
     cipherText: CiphertextType
@@ -88,6 +98,32 @@ export class CloudKmsService extends ServerModule {
         });
     }
 
+    encrypt(param: EncryptParam): Promise<EncryptResponse> {
+        return new Promise<EncryptResponse>((resolve, reject) => {
+            if (this._config.provider == 'aws') {
+                if (!this._awsKms) return;
+                this._awsKms.encrypt({
+                    KeyId: param.keyId,
+                    Plaintext: param.plainText
+                }, (err, data) => {
+                    if(err) {
+                        reject(err);
+                        return ;
+                    }
+                    if(!Buffer.isBuffer(data.CiphertextBlob))
+                    {
+                        reject(Error('Unknown ciphertext type'));
+                        return ;
+                    }
+                    resolve({
+                        keyId: data.KeyId,
+                        cipherText: data.CiphertextBlob
+                    });
+                });
+            }
+        });
+    }
+
     decrypt(param: DecryptParam): Promise<DecryptResponse> {
         return new Promise<DecryptResponse>((resolve, reject) => {
             if (this._config.provider == 'aws') {
@@ -120,6 +156,10 @@ export function cloudKmsService(config: Config & any): CloudKmsService {
 
 export function generateDataKey(param: GenerateDataKeyParam): Promise<GenerateDataKeyResponse> {
     return INSTANCE.generateDataKey(param);
+}
+
+export function encrypt(param: EncryptParam): Promise<EncryptResponse> {
+    return INSTANCE.encrypt(param);
 }
 
 export function decrypt(param: DecryptParam): Promise<DecryptResponse> {
