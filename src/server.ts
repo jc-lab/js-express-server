@@ -139,10 +139,31 @@ export class JsExpressServer {
             }
         }
 
-        if(typeof route.handler == 'object') {
-            (route.handler as any)['default'](req, res);
-        }else {
-            route.handler(req, res);
+        const errorHandler = (err) => {
+            console.log("eeeeeeeeeeeeeeeeeeeeee")
+            res.status(500).send({message: 'Server Error'});
+            console.error(err);
+        }
+
+        try {
+            let funcRet;
+            const isAsync = route.handler.constructor.name === "AsyncFunction";
+            console.log("isAsync : ", isAsync);
+            if(typeof route.handler == 'object') {
+                funcRet = (route.handler as any)['default'](req, res);
+            }else{
+                funcRet = route.handler(req, res);
+            }
+            if(funcRet) {
+                const isPromise = typeof funcRet.then == 'function';
+                if(isAsync || isPromise) {
+                    Promise.resolve(funcRet)
+                        .catch(errorHandler);
+                }
+            }
+        }catch(err){
+            console.log("XXXXXXXXXXXXXXXXX")
+            errorHandler(err);
         }
     }
 

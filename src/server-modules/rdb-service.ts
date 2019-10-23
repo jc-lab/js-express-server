@@ -79,34 +79,45 @@ export class RdbServiceImpl extends ServerModule {
         this._pool.getConnection(callback);
     }
 
-    getConnectionSafe(handler: (err: MysqlError, connection: PromissConnection) => void | Promise<void>) {
-        if(!this._pool)
-            return ;
-        this._pool.getConnection((err: MysqlError, connection: PoolConnection) => {
-            let res: any = handler(err, new PromissConnection(connection));
-            let isAsync = handler.constructor.name === 'AsyncFunction';
-            let isPromise = res && ((typeof res.then) == 'function');
-
-            let doRelease = () => {
-                const count = (this._pool as any)._freeConnections.indexOf(connection);
-                if(count != 0) {
-                    connection.release();
-                }
-            };
-
-            if(isAsync || isPromise) {
-                Promise.resolve(res)
-                    .then(() => {
-                        doRelease();
-                    })
-                    .catch((e) => {
-                        doRelease();
-                        throw e;
-                    });
-            }else{
-                doRelease();
+    getConnectionSafe(handler: (connection: PromissConnection) => void | Promise<void>): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            if(!this._pool) {
+                reject(Error("Closed pool"));
+                return ;
             }
-        });
+            this._pool.getConnection((err: MysqlError, connection: PoolConnection) => {
+                if(err) {
+                    reject(err);
+                    return;
+                }
+
+                let res: any = handler(new PromissConnection(connection));
+                let isAsync = handler.constructor.name === 'AsyncFunction';
+                let isPromise = res && ((typeof res.then) == 'function');
+
+                let doRelease = () => {
+                    const count = (this._pool as any)._freeConnections.indexOf(connection);
+                    if(count != 0) {
+                        connection.release();
+                    }
+                };
+
+                if(isAsync || isPromise) {
+                    Promise.resolve(res)
+                        .then((x) => {
+                            doRelease();
+                            resolve(x);
+                        })
+                        .catch((e) => {
+                            doRelease();
+                            reject(e);
+                        });
+                }else{
+                    doRelease();
+                    resolve(res);
+                }
+            });
+        })
     }
 }
 
@@ -114,7 +125,7 @@ export function rdbService(config: mysql.PoolConfig): RdbServiceImpl {
     return new RdbServiceImpl(config);
 }
 
-export function getConnectionSafe(handler: (err: MysqlError, connection: PromissConnection) => void | Promise<void>) {
+export function getConnectionSafe(handler: (connection: PromissConnection) => void | Promise<void>): Promise<void> {
     if (!INSTANCE) {
         throw new Error('rdb-service is not active.');
     }
