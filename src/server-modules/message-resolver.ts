@@ -35,7 +35,6 @@ export class MessageResolverImpl extends ServerModule {
         }else{
             this._sessionLocale = 'ko';
         }
-        console.log('Message Resolver: ', this._sessionLocale);
         return false;
     }
 

@@ -10,6 +10,11 @@ const C_EXPRESS_APP: symbol = Symbol('EXPRESS_APP');
 const C_SERVER: symbol = Symbol('SERVER');
 const C_SETTINGS: symbol = Symbol('SETTINGS');
 const C_SERVER_MODULES: symbol = Symbol('SERVER_MODULES');
+const C_ERROR_HANDLER: symbol = Symbol('ERROR_HANDLER');
+const C_CALL_ERROR_HANDLER: symbol = Symbol('CALL_ERROR_HANDLER');
+
+export type ErrorType = 'request';
+export type ErrorHandlerType = (type: ErrorType, err) => void;
 
 export interface Route {
     path: string;
@@ -30,6 +35,10 @@ function i<T>(p: JsExpressServer, s: symbol): T {
     return p[s] as T;
 }
 
+function s<T>(p: JsExpressServer, s: symbol, value: T) {
+    p[s] = value;
+}
+
 export class JsExpressServer {
     // private [C_IS_LAMBDA]: boolean;
     // private [C_AWS_SERVERLESS_EXPRESS]: any;
@@ -40,6 +49,8 @@ export class JsExpressServer {
     // private [C_SETTINGS]: Settings
 
     // private [C_SERVER_MODULES]: ServerModule[]
+
+    // private [C_ERROR_HANDLER]: ErrorHandlerType | null;
 
     constructor(settings: Settings) {
         const inLambda = !!process.env.LAMBDA_TASK_ROOT;
@@ -84,6 +95,21 @@ export class JsExpressServer {
 
     get lambdaHandler(): any {
         return (event, context, resolutionMode, callback) => i<any>(this, C_AWS_SERVERLESS_EXPRESS).proxy(i<Express>(this, C_EXPRESS_APP), event, context, resolutionMode, callback);
+    }
+
+    get onerror(): ErrorHandlerType | null {
+        return i<ErrorHandlerType | null>(this, C_ERROR_HANDLER);
+    }
+
+    set onerror(handler: ErrorHandlerType | null) {
+        s<ErrorHandlerType | null>(this, C_ERROR_HANDLER, handler);
+    }
+
+    [C_CALL_ERROR_HANDLER](type: ErrorType, err) {
+        const handler: ErrorHandlerType | null = this.onerror;
+        if(handler) {
+            handler(type, err);
+        }
     }
 
     use(module: ServerModule | any): any {
@@ -140,15 +166,13 @@ export class JsExpressServer {
         }
 
         const errorHandler = (err) => {
-            console.log("eeeeeeeeeeeeeeeeeeeeee")
             res.status(500).send({message: 'Server Error'});
-            console.error(err);
-        }
+            this[C_CALL_ERROR_HANDLER]('request', err);
+        };
 
         try {
             let funcRet;
             const isAsync = route.handler.constructor.name === "AsyncFunction";
-            console.log("isAsync : ", isAsync);
             if(typeof route.handler == 'object') {
                 funcRet = (route.handler as any)['default'](req, res);
             }else{
@@ -162,7 +186,6 @@ export class JsExpressServer {
                 }
             }
         }catch(err){
-            console.log("XXXXXXXXXXXXXXXXX")
             errorHandler(err);
         }
     }
