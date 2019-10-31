@@ -2,13 +2,13 @@ import { ServerModule } from '../server-module';
 import { JsExpressServer } from '../server';
 import { Request, Response } from 'express';
 export interface MessageResolverOptions {
+    defaultLocale?: string;
     localePath?: string;
     resolveCallback?: (locale: string, messageId: string, params?: any[]) => string;
 }
 export declare class MessageResolverImpl extends ServerModule {
     private _options;
     private _cachedMessages;
-    private _sessionLocale;
     constructor(options: MessageResolverOptions);
     attachTo(server: JsExpressServer): void;
     httpRequestStart(req: Request, res: Response): boolean;

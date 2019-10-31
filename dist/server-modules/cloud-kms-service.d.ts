@@ -34,16 +34,12 @@ export interface DecryptResponse {
     keyId?: string;
     plainText: PlaintextType;
 }
-export declare class CloudKmsService extends ServerModule {
-    private _config;
-    private _awsKms?;
-    constructor(config: Config & any);
+export declare abstract class CloudKmsService extends ServerModule {
     attachTo(server: JsExpressServer): void;
-    generateDataKey(param: GenerateDataKeyParam): Promise<GenerateDataKeyResponse>;
-    encrypt(param: EncryptParam): Promise<EncryptResponse>;
-    decrypt(param: DecryptParam): Promise<DecryptResponse>;
+    abstract generateDataKey(param: GenerateDataKeyParam): Promise<GenerateDataKeyResponse>;
+    abstract encrypt(param: EncryptParam): Promise<EncryptResponse>;
+    abstract decrypt(param: DecryptParam): Promise<DecryptResponse>;
 }
-export declare function cloudKmsService(config: Config & any): CloudKmsService;
 export declare function generateDataKey(param: GenerateDataKeyParam): Promise<GenerateDataKeyResponse>;
 export declare function encrypt(param: EncryptParam): Promise<EncryptResponse>;
 export declare function decrypt(param: DecryptParam): Promise<DecryptResponse>;

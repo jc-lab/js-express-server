@@ -2,9 +2,17 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const http_1 = __importDefault(require("http"));
+const ClsHooked = __importStar(require("cls-hooked"));
 const server_module_1 = require("./server-module");
 const C_ROUTE_HANDLER = Symbol('_ROUTE_HANDLER');
 const C_IS_LAMBDA = Symbol('IS_LAMBDA');
@@ -15,6 +23,7 @@ const C_SETTINGS = Symbol('SETTINGS');
 const C_SERVER_MODULES = Symbol('SERVER_MODULES');
 const C_ERROR_HANDLER = Symbol('ERROR_HANDLER');
 const C_CALL_ERROR_HANDLER = Symbol('CALL_ERROR_HANDLER');
+exports.session = ClsHooked.createNamespace('js-express-request-session');
 function i(p, s) {
     return p[s];
 }
@@ -41,6 +50,11 @@ class JsExpressServer {
         else {
             server = http_1.default.createServer(expressApp);
         }
+        expressApp.use((req, res, next) => {
+            exports.session.run(() => {
+                next();
+            });
+        });
         expressApp.use(express_1.default.json());
         expressApp.use((req, res, next) => {
             // Interceptor
@@ -65,7 +79,7 @@ class JsExpressServer {
         return this[C_IS_LAMBDA];
     }
     get lambdaHandler() {
-        return (event, context, resolutionMode, callback) => i(this, C_AWS_SERVERLESS_EXPRESS).proxy(i(this, C_SERVER), event, context, resolutionMode, callback);
+        return (event, context) => i(this, C_AWS_SERVERLESS_EXPRESS).proxy(i(this, C_SERVER), event, context);
     }
     get onerror() {
         return i(this, C_ERROR_HANDLER);

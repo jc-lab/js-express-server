@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
+import * as ClsHooked from 'cls-hooked';
 import { ServerModule } from './server-module';
+export declare const session: ClsHooked.Namespace;
 export declare type ErrorType = 'request';
 export declare type ErrorHandlerType = (type: ErrorType, err: any) => void;
 export interface Route {

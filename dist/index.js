@@ -16,17 +16,8 @@ const MessageResolver = __importStar(require("./server-modules/message-resolver"
 exports.MessageResolver = MessageResolver;
 const CloudKmsService = __importStar(require("./server-modules/cloud-kms-service"));
 exports.CloudKmsService = CloudKmsService;
+const CloudStorageService = __importStar(require("./server-modules/cloud-storage-service"));
+exports.CloudStorageService = CloudStorageService;
 __export(require("./server"));
 __export(require("./server-module"));
-function rdbService(config) {
-    return RdbService.rdbService(config);
-}
-exports.rdbService = rdbService;
-function messageResolver(localePath) {
-    return MessageResolver.messageResolver(localePath);
-}
-exports.messageResolver = messageResolver;
-function cloudKmsService(config) {
-    return CloudKmsService.cloudKmsService(config);
-}
-exports.cloudKmsService = cloudKmsService;
+__export(require("./server-modules/factory"));

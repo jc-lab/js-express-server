@@ -8,6 +8,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const server_module_1 = require("../server-module");
+const server_1 = require("../server");
 const path = __importStar(require("path"));
 const fs = __importStar(require("fs"));
 let INSTANCE;
@@ -15,7 +16,6 @@ class MessageResolverImpl extends server_module_1.ServerModule {
     constructor(options) {
         super();
         this._cachedMessages = new Map();
-        this._sessionLocale = 'ko';
         this._options = options;
     }
     attachTo(server) {
@@ -23,12 +23,10 @@ class MessageResolverImpl extends server_module_1.ServerModule {
     }
     httpRequestStart(req, res) {
         let appLocale = req.header('x-app-locale');
-        if (appLocale) {
-            this._sessionLocale = appLocale;
+        if (!appLocale) {
+            appLocale = this._options.defaultLocale;
         }
-        else {
-            this._sessionLocale = 'ko';
-        }
+        server_1.session.set('_system.message-resolver.locale', appLocale);
         return false;
     }
     _makeMessagePack(pack, json, prefixKey) {
@@ -44,27 +42,28 @@ class MessageResolverImpl extends server_module_1.ServerModule {
         });
     }
     resolve(messageId, params) {
-        const cacheId = this._sessionLocale + ':' + messageId;
+        const sessionLocale = server_1.session.get('_system.message-resolver.locale');
+        const cacheId = sessionLocale + ':' + messageId;
         let localedMessage;
         if (this._cachedMessages.has(cacheId)) {
             localedMessage = this._cachedMessages.get(cacheId);
         }
         else {
             if (this._options.localePath) {
-                let filePath = path.resolve(this._options.localePath, this._sessionLocale + '.json');
+                let filePath = path.resolve(this._options.localePath, sessionLocale + '.json');
                 if (fs.existsSync(filePath)) {
                     let rawData = fs.readFileSync(filePath);
                     let json = JSON.parse(rawData.toString('utf-8'));
                     let pack = {};
                     this._makeMessagePack(pack, json);
                     Object.keys(pack).forEach((value, index, array) => {
-                        this._cachedMessages.set(this._sessionLocale + ':' + value, pack[value]);
+                        this._cachedMessages.set(sessionLocale + ':' + value, pack[value]);
                     });
                     localedMessage = pack[messageId];
                 }
             }
             if (!localedMessage && this._options.resolveCallback) {
-                localedMessage = this._options.resolveCallback(this._sessionLocale, messageId, params);
+                localedMessage = this._options.resolveCallback(sessionLocale, messageId, params);
             }
         }
         return localedMessage;
