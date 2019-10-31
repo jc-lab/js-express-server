@@ -1,6 +1,8 @@
 import express, {Router, Express, Request, Response} from 'express';
 import {ApplicationRequestHandler, Application} from 'express-serve-static-core'
 import http, {Server} from 'http';
+import * as ClsHooked from 'cls-hooked'
+
 import {ServerModule} from './server-module';
 
 const C_ROUTE_HANDLER: symbol = Symbol('_ROUTE_HANDLER');
@@ -12,6 +14,8 @@ const C_SETTINGS: symbol = Symbol('SETTINGS');
 const C_SERVER_MODULES: symbol = Symbol('SERVER_MODULES');
 const C_ERROR_HANDLER: symbol = Symbol('ERROR_HANDLER');
 const C_CALL_ERROR_HANDLER: symbol = Symbol('CALL_ERROR_HANDLER');
+
+export const session = ClsHooked.createNamespace('js-express-request-session');
 
 export type ErrorType = 'request';
 export type ErrorHandlerType = (type: ErrorType, err) => void;
@@ -65,6 +69,11 @@ export class JsExpressServer {
             server = http.createServer(expressApp);
         }
 
+        expressApp.use((req: Request, res: Response, next) => {
+            session.run(() => {
+                next();
+            });
+        });
         expressApp.use(express.json());
         expressApp.use((req: Request, res: Response, next) => {
             // Interceptor
