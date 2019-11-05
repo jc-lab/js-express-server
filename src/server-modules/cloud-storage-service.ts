@@ -1,6 +1,7 @@
 import {ServerModule} from '../server-module';
 import {JsExpressServer} from '../server';
 import {Readable} from 'stream'
+import path from "path";
 
 let INSTANCE: CloudStorageService;
 
@@ -101,3 +102,10 @@ export function getNative(): any {
     return INSTANCE.getNative();
 }
 
+export function getObjectRealPath(bucketName: string, objectName: string): string {
+    return (INSTANCE as any).getObjectRealPath(bucketName, objectName);
+}
+
+export function getObjectRealPathWithPutPrepare(bucketName: string, objectName: string): Promise<string> {
+    return (INSTANCE as any).getObjectRealPathWithPutPrepare(bucketName, objectName);
+}
