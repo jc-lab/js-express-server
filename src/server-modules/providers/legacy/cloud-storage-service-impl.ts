@@ -17,15 +17,31 @@ export default class CloudStorageServiceImpl extends CloudStorageService {
         this._rootPath = path.resolve(config.path);
     }
 
+    _getDirPath(bucketName: string, objectName: string | null) {
+        let objectNameToken = objectName ? objectName.split('/') : null;
+        let dir = path.join(this._rootPath, bucketName, 'data');
+        if(objectNameToken) {
+            for(let o of objectNameToken) {
+                dir = path.join(dir, o);
+            }
+        }
+        return path.resolve(dir);
+    }
+
+    _autoMkdir(dir: string): Promise<void> {
+        return fs.promises.mkdir(dir, {
+            recursive: true
+        });
+    }
+
     createBucket(param: BucketParam): Promise<CreateBucketResponse> {
-        return new Promise<CreateBucketResponse>((resolve, reject) => {
-            fs.mkdir(path.resolve(this._rootPath, param.bucketName), (err) => {
-                if(err) {
-                    reject(err);
-                }else{
-                    resolve();
-                }
-            });
+        return new Promise<CreateBucketResponse>(async (resolve, reject) => {
+            try {
+                await this._autoMkdir(this._getDirPath(param.bucketName, null));
+                resolve();
+            }catch(e){
+                reject(e);
+            }
         });
     }
 
@@ -76,8 +92,13 @@ export default class CloudStorageServiceImpl extends CloudStorageService {
     }
 
     putObject(param: PutObjectParam): Promise<PutObjectResponse> {
-        return new Promise<CreateBucketResponse>((resolve, reject) => {
-            fs.writeFile(path.resolve(this._rootPath, param.key), param.body, (err) => {
+        return new Promise<CreateBucketResponse>(async (resolve, reject) => {
+            try {
+                await this._autoMkdir(this._getDirPath(param.bucketName, null));
+            }catch(e){
+                reject(e);
+            }
+            fs.writeFile(path.resolve(this._rootPath, param.bucketName + '/data/' + param.key), param.body, (err) => {
                 if(err) {
                     reject(err);
                 }else{
@@ -88,8 +109,13 @@ export default class CloudStorageServiceImpl extends CloudStorageService {
     }
 
     upload(param: PutObjectParam): Promise<PutObjectResponse> {
-        return new Promise<CreateBucketResponse>((resolve, reject) => {
-            fs.writeFile(path.resolve(this._rootPath, param.key), param.body, (err) => {
+        return new Promise<CreateBucketResponse>(async (resolve, reject) => {
+            try {
+                await this._autoMkdir(this._getDirPath(param.bucketName, null));
+            }catch(e){
+                reject(e);
+            }
+            fs.writeFile(path.resolve(this._rootPath, param.bucketName + '/data/' + param.key), param.body, (err) => {
                 if(err) {
                     reject(err);
                 }else{
@@ -101,5 +127,20 @@ export default class CloudStorageServiceImpl extends CloudStorageService {
 
     getNative() {
         return null;
+    }
+
+    getObjectRealPath(bucketName: string, objectName: string): string {
+        return path.resolve(this._rootPath, bucketName + '/data/' + objectName);
+    }
+
+    getObjectRealPathWithPutPrepare(bucketName: string, objectName: string): Promise<string> {
+        return new Promise<string>(async (resolve, reject) => {
+            try {
+                await this._autoMkdir(this._getDirPath(bucketName, objectName));
+            }catch(e){
+                reject(e);
+            }
+            resolve(path.resolve(this._rootPath, bucketName + '/data/' + objectName));
+        });
     }
 }
