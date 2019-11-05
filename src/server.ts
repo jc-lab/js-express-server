@@ -9,6 +9,7 @@ const C_ROUTE_HANDLER: symbol = Symbol('_ROUTE_HANDLER');
 const C_IS_LAMBDA: symbol = Symbol('IS_LAMBDA');
 const C_AWS_SERVERLESS_EXPRESS: symbol = Symbol('AWS_SERVERLESS_EXPRESS');
 const C_EXPRESS_APP: symbol = Symbol('EXPRESS_APP');
+const C_EXPRESS_SERVER: symbol = Symbol('EXPRESS_SERVER');
 const C_SERVER: symbol = Symbol('SERVER');
 const C_SETTINGS: symbol = Symbol('SETTINGS');
 const C_SERVER_MODULES: symbol = Symbol('SERVER_MODULES');
@@ -49,6 +50,7 @@ export class JsExpressServer {
 
     // private [C_EXPRESS_APP]: Express
     // private [C_SERVER]: Server
+    // private [EXPRESS_SERVER]:
 
     // private [C_SETTINGS]: Settings
 
@@ -96,6 +98,12 @@ export class JsExpressServer {
             [C_SETTINGS]: {value: settings},
             [C_SERVER_MODULES]: {value: serverModules}
         });
+    }
+
+    close() {
+        if(!this[C_IS_LAMBDA]) {
+            i<http.Server>(this, C_EXPRESS_SERVER).close();
+        }
     }
 
     get isInLambda(): boolean {
@@ -146,9 +154,9 @@ export class JsExpressServer {
         if (!i<boolean>(this, C_IS_LAMBDA)) {
             const settings: Settings = i<Settings>(this, C_SETTINGS);
             if(settings.host) {
-                i<Express>(this, C_EXPRESS_APP).listen(settings.port, settings.host, settings.backlog);
+                s<http.Server>(this, C_EXPRESS_SERVER, i<Express>(this, C_EXPRESS_APP).listen(settings.port, settings.host, settings.backlog));
             }else{
-                i<Express>(this, C_EXPRESS_APP).listen(settings.port);
+                s<http.Server>(this, C_EXPRESS_SERVER, i<Express>(this, C_EXPRESS_APP).listen(settings.port));
             }
         }
     }
