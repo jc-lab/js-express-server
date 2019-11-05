@@ -60,4 +60,6 @@ export declare function listBuckets(param?: BaseParam): Promise<ListBucketsRespo
 export declare function putObject(param: PutObjectParam): Promise<PutObjectResponse>;
 export declare function upload(param: UploadParam): Promise<UploadResponse>;
 export declare function getNative(): any;
+export declare function getObjectRealPath(bucketName: string, objectName: string): string;
+export declare function getObjectRealPathWithPutPrepare(bucketName: string, objectName: string): Promise<string>;
 //# sourceMappingURL=cloud-storage-service.d.ts.map

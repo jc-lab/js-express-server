@@ -20,17 +20,31 @@ class CloudStorageServiceImpl extends cloud_storage_service_1.CloudStorageServic
         super();
         this._rootPath = path_1.default.resolve(config.path);
     }
-    createBucket(param) {
-        return new Promise((resolve, reject) => {
-            fs_1.default.mkdir(path_1.default.resolve(this._rootPath, param.bucketName), (err) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    resolve();
-                }
-            });
+    _getDirPath(bucketName, objectName) {
+        let objectNameToken = objectName ? objectName.split('/') : null;
+        let dir = path_1.default.join(this._rootPath, bucketName, 'data');
+        if (objectNameToken) {
+            for (let o of objectNameToken) {
+                dir = path_1.default.join(dir, o);
+            }
+        }
+        return path_1.default.resolve(dir);
+    }
+    _autoMkdir(dir) {
+        return fs_1.default.promises.mkdir(dir, {
+            recursive: true
         });
+    }
+    createBucket(param) {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this._autoMkdir(this._getDirPath(param.bucketName, null));
+                resolve();
+            }
+            catch (e) {
+                reject(e);
+            }
+        }));
     }
     deleteBucket(param) {
         return new Promise((resolve, reject) => {
@@ -80,8 +94,14 @@ class CloudStorageServiceImpl extends cloud_storage_service_1.CloudStorageServic
         });
     }
     putObject(param) {
-        return new Promise((resolve, reject) => {
-            fs_1.default.writeFile(path_1.default.resolve(this._rootPath, param.key), param.body, (err) => {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this._autoMkdir(this._getDirPath(param.bucketName, null));
+            }
+            catch (e) {
+                reject(e);
+            }
+            fs_1.default.writeFile(path_1.default.resolve(this._rootPath, param.bucketName + '/data/' + param.key), param.body, (err) => {
                 if (err) {
                     reject(err);
                 }
@@ -89,11 +109,17 @@ class CloudStorageServiceImpl extends cloud_storage_service_1.CloudStorageServic
                     resolve();
                 }
             });
-        });
+        }));
     }
     upload(param) {
-        return new Promise((resolve, reject) => {
-            fs_1.default.writeFile(path_1.default.resolve(this._rootPath, param.key), param.body, (err) => {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this._autoMkdir(this._getDirPath(param.bucketName, null));
+            }
+            catch (e) {
+                reject(e);
+            }
+            fs_1.default.writeFile(path_1.default.resolve(this._rootPath, param.bucketName + '/data/' + param.key), param.body, (err) => {
                 if (err) {
                     reject(err);
                 }
@@ -101,10 +127,24 @@ class CloudStorageServiceImpl extends cloud_storage_service_1.CloudStorageServic
                     resolve();
                 }
             });
-        });
+        }));
     }
     getNative() {
         return null;
+    }
+    getObjectRealPath(bucketName, objectName) {
+        return path_1.default.resolve(this._rootPath, bucketName + '/data/' + objectName);
+    }
+    getObjectRealPathWithPutPrepare(bucketName, objectName) {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this._autoMkdir(this._getDirPath(bucketName, objectName));
+            }
+            catch (e) {
+                reject(e);
+            }
+            resolve(path_1.default.resolve(this._rootPath, bucketName + '/data/' + objectName));
+        }));
     }
 }
 exports.default = CloudStorageServiceImpl;

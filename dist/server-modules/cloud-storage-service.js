@@ -32,3 +32,11 @@ function getNative() {
     return INSTANCE.getNative();
 }
 exports.getNative = getNative;
+function getObjectRealPath(bucketName, objectName) {
+    return INSTANCE.getObjectRealPath(bucketName, objectName);
+}
+exports.getObjectRealPath = getObjectRealPath;
+function getObjectRealPathWithPutPrepare(bucketName, objectName) {
+    return INSTANCE.getObjectRealPathWithPutPrepare(bucketName, objectName);
+}
+exports.getObjectRealPathWithPutPrepare = getObjectRealPathWithPutPrepare;

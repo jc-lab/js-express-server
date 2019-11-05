@@ -18,6 +18,7 @@ export interface Settings {
 }
 export declare class JsExpressServer {
     constructor(settings: Settings);
+    close(): void;
     readonly isInLambda: boolean;
     readonly lambdaHandler: any;
     onerror: ErrorHandlerType | null;
