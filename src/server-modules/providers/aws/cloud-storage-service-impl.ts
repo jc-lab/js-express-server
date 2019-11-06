@@ -3,7 +3,7 @@ import {
     Config,
     Bucket,
     BucketParam, CreateBucketResponse, BaseParam, DeleteBucketResponse, ListBucketsResponse,
-    PutObjectParam, PutObjectResponse, UploadParam, UploadResponse
+    PutObjectParam, PutObjectResponse, UploadParam, UploadResponse, GetSignedUrlParam, GetSignedUrlOperation, Acl
 } from '../../cloud-storage-service'
 
 import { S3 } from 'aws-sdk'
@@ -19,6 +19,34 @@ function convertBucketsFrom(input?: S3.Buckets): Bucket[] {
         }
     }
     return output;
+}
+
+function convertOperationFrom(input: GetSignedUrlOperation): string | null {
+    switch (input) {
+        case 'getObject':
+            return 'getObject';
+        case 'putObject':
+            return 'putObject';
+    }
+    return null;
+}
+
+function convertAcl(input?: Acl): string | undefined {
+    switch (input) {
+        case 'private':
+            return 'private';
+        case 'public-read':
+            return 'public-read';
+        case 'public-read-write':
+            return 'public-read-write';
+        case 'authenticated-read':
+            return 'authenticated-read';
+        case 'bucket-owner-read':
+            return 'bucket-owner-read';
+        case 'bucket-owner-full-control':
+            return 'bucket-owner-full-control';
+    }
+    return undefined;
 }
 
 export default class CloudStorageServiceImpl extends CloudStorageService {
@@ -102,6 +130,18 @@ export default class CloudStorageServiceImpl extends CloudStorageService {
                 }
             });
         });
+    }
+
+    getSignedUrl(operation: GetSignedUrlOperation, param: GetSignedUrlParam): Promise<string> {
+        return this._native.getSignedUrlPromise(convertOperationFrom(operation) as string, Object.assign({
+            Key: param.key,
+            ContentMD5: param.contentMd5,
+            ContentType: param.contentType,
+            ContentDisposition: param.contentDisposition,
+            ContentEncoding: param.contentEncoding,
+            ContentLanguage: param.contentLanguage,
+            Acl: convertAcl(param.acl),
+        }, param.etc));
     }
 
     getNative() {

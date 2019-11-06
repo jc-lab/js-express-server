@@ -14,6 +14,10 @@ export type CreationDate = Date;
 
 export type Body = Buffer|Uint8Array|Blob|string|Readable;
 
+export type GetSignedUrlOperation = 'getObject' | 'putObject';
+
+export type Acl = 'private' | 'public-read' | 'public-read-write' | 'authenticated-read' | 'bucket-owner-read' | 'bucket-owner-full-control';
+
 export interface Bucket {
     /**
      * The name of the bucket.
@@ -65,6 +69,16 @@ export interface UploadResponse {
 
 }
 
+export interface GetSignedUrlParam extends BucketParam {
+    key: string;
+    acl?: Acl;
+    contentMd5?: string;
+    contentType?: string;
+    contentDisposition?: string;
+    contentEncoding?: string;
+    contentLanguage?: string;
+}
+
 export abstract class CloudStorageService extends ServerModule {
     attachTo(server: JsExpressServer): void {
         INSTANCE = this;
@@ -75,6 +89,9 @@ export abstract class CloudStorageService extends ServerModule {
     abstract listBuckets(param?: BaseParam): Promise<ListBucketsResponse>;
     abstract putObject(param: PutObjectParam): Promise<PutObjectResponse>;
     abstract upload(param: UploadParam): Promise<UploadResponse>;
+
+    abstract getSignedUrl(operation: GetSignedUrlOperation, params: GetSignedUrlParam): Promise<string>;
+
     abstract getNative();
 }
 
@@ -96,6 +113,10 @@ export function putObject(param: PutObjectParam): Promise<PutObjectResponse> {
 
 export function upload(param: UploadParam): Promise<UploadResponse> {
     return INSTANCE.upload(param);
+}
+
+export function getSignedUrl(operation: GetSignedUrlOperation, params: GetSignedUrlParam): Promise<string> {
+    return INSTANCE.getSignedUrl(operation, params);
 }
 
 export function getNative(): any {
