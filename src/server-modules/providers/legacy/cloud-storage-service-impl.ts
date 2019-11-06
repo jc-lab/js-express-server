@@ -3,7 +3,7 @@ import {
     Config,
     Bucket,
     BucketParam, CreateBucketResponse, BaseParam, DeleteBucketResponse, ListBucketsResponse,
-    PutObjectParam, PutObjectResponse, UploadParam, UploadResponse
+    PutObjectParam, PutObjectResponse, UploadParam, UploadResponse, GetSignedUrlOperation, GetSignedUrlParam
 } from '../../cloud-storage-service'
 
 import path from 'path'
@@ -122,6 +122,12 @@ export default class CloudStorageServiceImpl extends CloudStorageService {
                     resolve();
                 }
             });
+        });
+    }
+
+    getSignedUrl(operation: GetSignedUrlOperation, param: GetSignedUrlParam): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            reject(Error('Not support yet'));
         });
     }
 
