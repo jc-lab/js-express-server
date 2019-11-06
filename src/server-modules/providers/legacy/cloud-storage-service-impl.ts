@@ -21,8 +21,8 @@ export default class CloudStorageServiceImpl extends CloudStorageService {
         let objectNameToken = objectName ? objectName.split('/') : null;
         let dir = path.join(this._rootPath, bucketName, 'data');
         if(objectNameToken) {
-            for(let o of objectNameToken) {
-                dir = path.join(dir, o);
+            for(let i=1; i < objectNameToken.length; i++) {
+                dir = path.join(dir, objectNameToken[i - 1]);
             }
         }
         return path.resolve(dir);
