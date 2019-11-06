@@ -71,7 +71,6 @@ export interface UploadResponse {
 
 export interface GetSignedUrlParam extends BucketParam {
     key: string;
-    acl?: Acl;
     contentMd5?: string;
     contentType?: string;
     contentDisposition?: string;
