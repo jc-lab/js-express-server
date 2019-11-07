@@ -24,7 +24,16 @@ const C_SETTINGS = Symbol('SETTINGS');
 const C_SERVER_MODULES = Symbol('SERVER_MODULES');
 const C_ERROR_HANDLER = Symbol('ERROR_HANDLER');
 const C_CALL_ERROR_HANDLER = Symbol('CALL_ERROR_HANDLER');
-exports.session = ClsHooked.createNamespace('js-express-request-session');
+const requestSessionNs = ClsHooked.createNamespace('js-express-request-session');
+class RequestSession {
+    static get(key) {
+        return requestSessionNs.get(key);
+    }
+    static set(key, value) {
+        return requestSessionNs.set(key, value);
+    }
+}
+exports.RequestSession = RequestSession;
 function i(p, s) {
     return p[s];
 }
@@ -52,12 +61,12 @@ class JsExpressServer {
         else {
             server = http_1.default.createServer(expressApp);
         }
+        expressApp.use(express_1.default.json());
         expressApp.use((req, res, next) => {
-            exports.session.run(() => {
+            requestSessionNs.run(() => {
                 next();
             });
         });
-        expressApp.use(express_1.default.json());
         expressApp.use((req, res, next) => {
             // Interceptor
             let handled = false;

@@ -1,4 +1,4 @@
-import { CloudStorageService, Config, BucketParam, CreateBucketResponse, BaseParam, DeleteBucketResponse, ListBucketsResponse, PutObjectParam, PutObjectResponse } from '../../cloud-storage-service';
+import { CloudStorageService, Config, BucketParam, CreateBucketResponse, BaseParam, DeleteBucketResponse, ListBucketsResponse, PutObjectParam, PutObjectResponse, GetSignedUrlOperation, GetSignedUrlParam } from '../../cloud-storage-service';
 export default class CloudStorageServiceImpl extends CloudStorageService {
     private _rootPath;
     constructor(config: Config & any);
@@ -9,6 +9,7 @@ export default class CloudStorageServiceImpl extends CloudStorageService {
     listBuckets(param?: BaseParam): Promise<ListBucketsResponse>;
     putObject(param: PutObjectParam): Promise<PutObjectResponse>;
     upload(param: PutObjectParam): Promise<PutObjectResponse>;
+    getSignedUrl(operation: GetSignedUrlOperation, param: GetSignedUrlParam): Promise<string>;
     getNative(): null;
     getObjectRealPath(bucketName: string, objectName: string): string;
     getObjectRealPathWithPutPrepare(bucketName: string, objectName: string): Promise<string>;

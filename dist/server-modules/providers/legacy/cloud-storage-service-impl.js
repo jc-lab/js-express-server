@@ -24,8 +24,8 @@ class CloudStorageServiceImpl extends cloud_storage_service_1.CloudStorageServic
         let objectNameToken = objectName ? objectName.split('/') : null;
         let dir = path_1.default.join(this._rootPath, bucketName, 'data');
         if (objectNameToken) {
-            for (let o of objectNameToken) {
-                dir = path_1.default.join(dir, o);
+            for (let i = 1; i < objectNameToken.length; i++) {
+                dir = path_1.default.join(dir, objectNameToken[i - 1]);
             }
         }
         return path_1.default.resolve(dir);
@@ -128,6 +128,11 @@ class CloudStorageServiceImpl extends cloud_storage_service_1.CloudStorageServic
                 }
             });
         }));
+    }
+    getSignedUrl(operation, param) {
+        return new Promise((resolve, reject) => {
+            reject(Error('Not support yet'));
+        });
     }
     getNative() {
         return null;

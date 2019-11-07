@@ -28,6 +28,10 @@ function upload(param) {
     return INSTANCE.upload(param);
 }
 exports.upload = upload;
+function getSignedUrl(operation, params) {
+    return INSTANCE.getSignedUrl(operation, params);
+}
+exports.getSignedUrl = getSignedUrl;
 function getNative() {
     return INSTANCE.getNative();
 }

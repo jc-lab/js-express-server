@@ -8,6 +8,8 @@ export interface Config {
 }
 export declare type CreationDate = Date;
 export declare type Body = Buffer | Uint8Array | Blob | string | Readable;
+export declare type GetSignedUrlOperation = 'getObject' | 'putObject';
+export declare type Acl = 'private' | 'public-read' | 'public-read-write' | 'authenticated-read' | 'bucket-owner-read' | 'bucket-owner-full-control';
 export interface Bucket {
     /**
      * The name of the bucket.
@@ -45,6 +47,14 @@ export interface PutObjectResponse {
 }
 export interface UploadResponse {
 }
+export interface GetSignedUrlParam extends BucketParam {
+    key: string;
+    contentMd5?: string;
+    contentType?: string;
+    contentDisposition?: string;
+    contentEncoding?: string;
+    contentLanguage?: string;
+}
 export declare abstract class CloudStorageService extends ServerModule {
     attachTo(server: JsExpressServer): void;
     abstract createBucket(param: BucketParam): Promise<CreateBucketResponse>;
@@ -52,6 +62,7 @@ export declare abstract class CloudStorageService extends ServerModule {
     abstract listBuckets(param?: BaseParam): Promise<ListBucketsResponse>;
     abstract putObject(param: PutObjectParam): Promise<PutObjectResponse>;
     abstract upload(param: UploadParam): Promise<UploadResponse>;
+    abstract getSignedUrl(operation: GetSignedUrlOperation, params: GetSignedUrlParam): Promise<string>;
     abstract getNative(): any;
 }
 export declare function createBucket(param: BucketParam): Promise<CreateBucketResponse>;
@@ -59,6 +70,7 @@ export declare function deleteBucket(param: BucketParam): Promise<DeleteBucketRe
 export declare function listBuckets(param?: BaseParam): Promise<ListBucketsResponse>;
 export declare function putObject(param: PutObjectParam): Promise<PutObjectResponse>;
 export declare function upload(param: UploadParam): Promise<UploadResponse>;
+export declare function getSignedUrl(operation: GetSignedUrlOperation, params: GetSignedUrlParam): Promise<string>;
 export declare function getNative(): any;
 export declare function getObjectRealPath(bucketName: string, objectName: string): string;
 export declare function getObjectRealPathWithPutPrepare(bucketName: string, objectName: string): Promise<string>;

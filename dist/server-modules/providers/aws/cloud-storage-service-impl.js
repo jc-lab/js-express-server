@@ -14,6 +14,32 @@ function convertBucketsFrom(input) {
     }
     return output;
 }
+function convertOperationFrom(input) {
+    switch (input) {
+        case 'getObject':
+            return 'getObject';
+        case 'putObject':
+            return 'putObject';
+    }
+    return null;
+}
+function convertAcl(input) {
+    switch (input) {
+        case 'private':
+            return 'private';
+        case 'public-read':
+            return 'public-read';
+        case 'public-read-write':
+            return 'public-read-write';
+        case 'authenticated-read':
+            return 'authenticated-read';
+        case 'bucket-owner-read':
+            return 'bucket-owner-read';
+        case 'bucket-owner-full-control':
+            return 'bucket-owner-full-control';
+    }
+    return undefined;
+}
 class CloudStorageServiceImpl extends cloud_storage_service_1.CloudStorageService {
     constructor(config) {
         super();
@@ -93,6 +119,17 @@ class CloudStorageServiceImpl extends cloud_storage_service_1.CloudStorageServic
                 }
             });
         });
+    }
+    getSignedUrl(operation, param) {
+        return this._native.getSignedUrlPromise(convertOperationFrom(operation), Object.assign({
+            Bucket: param.bucketName,
+            Key: param.key,
+            ContentMD5: param.contentMd5,
+            ContentType: param.contentType,
+            ContentDisposition: param.contentDisposition,
+            ContentEncoding: param.contentEncoding,
+            ContentLanguage: param.contentLanguage
+        }, param.etc));
     }
     getNative() {
         return this._native;

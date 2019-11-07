@@ -26,7 +26,7 @@ class MessageResolverImpl extends server_module_1.ServerModule {
         if (!appLocale) {
             appLocale = this._options.defaultLocale;
         }
-        server_1.session.set('_system.message-resolver.locale', appLocale);
+        server_1.RequestSession.set('_system.message-resolver.locale', appLocale);
         return false;
     }
     _makeMessagePack(pack, json, prefixKey) {
@@ -42,7 +42,7 @@ class MessageResolverImpl extends server_module_1.ServerModule {
         });
     }
     resolve(messageId, params) {
-        const sessionLocale = server_1.session.get('_system.message-resolver.locale');
+        const sessionLocale = server_1.RequestSession.get('_system.message-resolver.locale');
         const cacheId = sessionLocale + ':' + messageId;
         let localedMessage;
         if (this._cachedMessages.has(cacheId)) {
