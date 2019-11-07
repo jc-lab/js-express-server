@@ -80,12 +80,12 @@ export class JsExpressServer {
             server = http.createServer(expressApp);
         }
 
+        expressApp.use(express.json());
         expressApp.use((req: Request, res: Response, next) => {
             requestSessionNs.run(() => {
                 next();
             });
         });
-        expressApp.use(express.json());
         expressApp.use((req: Request, res: Response, next) => {
             // Interceptor
 
