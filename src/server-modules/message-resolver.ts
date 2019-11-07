@@ -1,5 +1,5 @@
 import {ServerModule} from '../server-module';
-import {JsExpressServer, session} from '../server';
+import {JsExpressServer, RequestSession} from '../server';
 import {Request, Response} from 'express';
 
 import * as path from 'path'
@@ -32,7 +32,7 @@ export class MessageResolverImpl extends ServerModule {
         if(!appLocale) {
             appLocale = this._options.defaultLocale;
         }
-        session.set('_system.message-resolver.locale', appLocale);
+        RequestSession.set('_system.message-resolver.locale', appLocale);
         return false;
     }
 
@@ -49,7 +49,7 @@ export class MessageResolverImpl extends ServerModule {
     }
 
     resolve(messageId: string, params?: any[]): string | null {
-        const sessionLocale = session.get('_system.message-resolver.locale');
+        const sessionLocale = RequestSession.get('_system.message-resolver.locale');
         const cacheId = sessionLocale + ':' + messageId;
         let localedMessage;
         if(this._cachedMessages.has(cacheId)) {
