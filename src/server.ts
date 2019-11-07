@@ -16,10 +16,19 @@ const C_SERVER_MODULES: symbol = Symbol('SERVER_MODULES');
 const C_ERROR_HANDLER: symbol = Symbol('ERROR_HANDLER');
 const C_CALL_ERROR_HANDLER: symbol = Symbol('CALL_ERROR_HANDLER');
 
-export const session = ClsHooked.createNamespace('js-express-request-session');
+const requestSessionNs = ClsHooked.createNamespace('js-express-request-session');
 
 export type ErrorType = 'request';
 export type ErrorHandlerType = (type: ErrorType, err) => void;
+
+export class RequestSession {
+    static get(key: string): any {
+        return requestSessionNs.get(key);
+    }
+    static set<T>(key: string, value: T) {
+        return requestSessionNs.set(key, value);
+    }
+}
 
 export interface Route {
     path: string;
@@ -71,12 +80,12 @@ export class JsExpressServer {
             server = http.createServer(expressApp);
         }
 
+        expressApp.use(express.json());
         expressApp.use((req: Request, res: Response, next) => {
-            session.run(() => {
+            requestSessionNs.run(() => {
                 next();
             });
         });
-        expressApp.use(express.json());
         expressApp.use((req: Request, res: Response, next) => {
             // Interceptor
 
