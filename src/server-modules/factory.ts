@@ -10,12 +10,13 @@ import AWSCloudKmsService from './providers/aws/cloud-kms-service-impl'
 
 import AWSCloudStorageService from './providers/aws/cloud-storage-service-impl'
 import LegacyCloudStorageService from './providers/legacy/cloud-storage-service-impl'
+import {MessageResolverOptions} from "./message-resolver";
 
 export function rdbService(config: mysql.PoolConfig) {
     return RdbService.rdbService(config);
 }
 
-export function messageResolver(localePath: string) {
+export function messageResolver(localePath: string | MessageResolverOptions) {
     return MessageResolver.messageResolver(localePath);
 }
 
