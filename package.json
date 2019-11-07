@@ -14,14 +14,14 @@
   },
   "author": "Joseph Lee <development@jc-lab.net>",
   "devDependencies": {
-    "@types/cls-hooked": "^4.3.0",
-    "typescript": "^3.6.4"
-  },
-  "dependencies": {
     "@types/express": "^4.17.1",
     "@types/http-server": "^0.10.0",
     "@types/mysql": "^2.15.7",
     "@types/node": "^12.7.12",
+    "@types/cls-hooked": "^4.3.0",
+    "typescript": "^3.6.4"
+  },
+  "dependencies": {
     "aws-sdk": "^2.553.0",
     "aws-serverless-express": "^3.3.6",
     "cls-hooked": "^4.2.2",
