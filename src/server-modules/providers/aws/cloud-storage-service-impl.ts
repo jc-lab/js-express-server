@@ -133,15 +133,26 @@ export default class CloudStorageServiceImpl extends CloudStorageService {
     }
 
     getSignedUrl(operation: GetSignedUrlOperation, param: GetSignedUrlParam): Promise<string> {
-        return this._native.getSignedUrlPromise(convertOperationFrom(operation) as string, Object.assign({
-            Bucket: param.bucketName,
-            Key: param.key,
-            ContentMD5: param.contentMd5,
-            ContentType: param.contentType,
-            ContentDisposition: param.contentDisposition,
-            ContentEncoding: param.contentEncoding,
-            ContentLanguage: param.contentLanguage
-        }, param.etc));
+        switch(operation) {
+            case 'getObject':
+                return this._native.getSignedUrlPromise(convertOperationFrom(operation) as string, Object.assign({
+                    Bucket: param.bucketName,
+                    Key: param.key,
+                }, param.etc));
+                break;
+
+            case 'putObject':
+                return this._native.getSignedUrlPromise(convertOperationFrom(operation) as string, Object.assign({
+                    Bucket: param.bucketName,
+                    Key: param.key,
+                    ContentMD5: param.contentMd5,
+                    ContentType: param.contentType,
+                    ContentDisposition: param.contentDisposition,
+                    ContentEncoding: param.contentEncoding,
+                }, param.etc));
+                break;
+        }
+        return new Promise<string>((resolve, reject) => resolve());
     }
 
     getNative() {
