@@ -115,6 +115,10 @@ export class JsExpressServer {
         }
     }
 
+    getExpress(): Express {
+        return i<Express>(this, C_EXPRESS_APP);
+    }
+
     get isInLambda(): boolean {
         return this[C_IS_LAMBDA];
     }
