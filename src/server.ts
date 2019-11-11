@@ -171,9 +171,9 @@ export class JsExpressServer {
         if (!i<boolean>(this, C_IS_LAMBDA)) {
             const settings: Settings = i<Settings>(this, C_SETTINGS);
             if(settings.host) {
-                s<http.Server>(this, C_EXPRESS_SERVER, i<Express>(this, C_EXPRESS_APP).listen(settings.port, settings.host, settings.backlog));
+                s<http.Server>(this, C_EXPRESS_SERVER, i<Express>(this, C_SERVER).listen(settings.port, settings.host, settings.backlog));
             }else{
-                s<http.Server>(this, C_EXPRESS_SERVER, i<Express>(this, C_EXPRESS_APP).listen(settings.port));
+                s<http.Server>(this, C_EXPRESS_SERVER, i<Express>(this, C_SERVER).listen(settings.port));
             }
         }
     }
