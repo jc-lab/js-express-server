@@ -119,6 +119,10 @@ export class JsExpressServer {
         return i<Express>(this, C_EXPRESS_APP);
     }
 
+    getServer(): Server {
+        return i<Server>(this, C_SERVER);
+    }
+
     get isInLambda(): boolean {
         return this[C_IS_LAMBDA];
     }
