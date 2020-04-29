@@ -5,16 +5,16 @@ import * as ClsHooked from 'cls-hooked';
 
 import {ServerModule} from './server-module';
 
-const C_ROUTE_HANDLER: symbol = Symbol('_ROUTE_HANDLER');
-const C_IS_LAMBDA: symbol = Symbol('IS_LAMBDA');
-const C_AWS_SERVERLESS_EXPRESS: symbol = Symbol('AWS_SERVERLESS_EXPRESS');
-const C_EXPRESS_APP: symbol = Symbol('EXPRESS_APP');
-const C_EXPRESS_SERVER: symbol = Symbol('EXPRESS_SERVER');
-const C_SERVER: symbol = Symbol('SERVER');
-const C_SETTINGS: symbol = Symbol('SETTINGS');
-const C_SERVER_MODULES: symbol = Symbol('SERVER_MODULES');
-const C_ERROR_HANDLER: symbol = Symbol('ERROR_HANDLER');
-const C_CALL_ERROR_HANDLER: symbol = Symbol('CALL_ERROR_HANDLER');
+const C_ROUTE_HANDLER = Symbol('_ROUTE_HANDLER');
+const C_IS_LAMBDA = Symbol('IS_LAMBDA');
+const C_AWS_SERVERLESS_EXPRESS = Symbol('AWS_SERVERLESS_EXPRESS');
+const C_EXPRESS_APP = Symbol('EXPRESS_APP');
+const C_EXPRESS_SERVER = Symbol('EXPRESS_SERVER');
+const C_SERVER = Symbol('SERVER');
+const C_SETTINGS = Symbol('SETTINGS');
+const C_SERVER_MODULES = Symbol('SERVER_MODULES');
+const C_ERROR_HANDLER = Symbol('ERROR_HANDLER');
+const C_CALL_ERROR_HANDLER = Symbol('CALL_ERROR_HANDLER');
 
 const requestSessionNs = ClsHooked.createNamespace('js-express-request-session');
 
@@ -45,27 +45,19 @@ export interface Settings {
   backlog: number;
 }
 
-function i<T>(p: JsExpressServer, s: symbol): T {
-  return p[s] as T;
-}
-
-function s<T>(p: JsExpressServer, s: symbol, value: T) {
-  p[s] = value;
-}
-
 export class JsExpressServer {
-  // private [C_IS_LAMBDA]: boolean;
-  // private [C_AWS_SERVERLESS_EXPRESS]: any;
+  private [C_IS_LAMBDA]: boolean;
+  private [C_AWS_SERVERLESS_EXPRESS]: any;
 
-  // private [C_EXPRESS_APP]: Express
-  // private [C_SERVER]: Server
-  // private [EXPRESS_SERVER]:
+  private [C_EXPRESS_APP]: Express;
+  private [C_SERVER]: Server;
+  private [C_EXPRESS_SERVER]: http.Server;
 
-  // private [C_SETTINGS]: Settings
+  private [C_SETTINGS]: Settings;
 
-  // private [C_SERVER_MODULES]: ServerModule[]
+  private [C_SERVER_MODULES]: ServerModule[];
 
-  // private [C_ERROR_HANDLER]: ErrorHandlerType | null;
+  private [C_ERROR_HANDLER]: ErrorHandlerType | null;
 
   constructor(settings: Settings) {
     const inLambda = !!process.env.LAMBDA_TASK_ROOT;
@@ -90,7 +82,7 @@ export class JsExpressServer {
       // Interceptor
 
       let handled: boolean = false;
-      for (let mod of i<ServerModule[]>(this, C_SERVER_MODULES)) {
+      for (let mod of this[C_SERVER_MODULES]) {
         handled = mod.httpRequestStart(req, res);
         if (handled)
           return ;
@@ -111,16 +103,16 @@ export class JsExpressServer {
 
   close() {
     if (!this[C_IS_LAMBDA]) {
-      i<http.Server>(this, C_EXPRESS_SERVER).close();
+      this[C_EXPRESS_SERVER].close();
     }
   }
 
   getExpress(): Express {
-    return i<Express>(this, C_EXPRESS_APP);
+    return this[C_EXPRESS_APP];
   }
 
   getServer(): Server {
-    return i<Server>(this, C_SERVER);
+    return this[C_SERVER];
   }
 
   get isInLambda(): boolean {
@@ -128,15 +120,15 @@ export class JsExpressServer {
   }
 
   get lambdaHandler(): any {
-    return (event, context) => i<any>(this, C_AWS_SERVERLESS_EXPRESS).proxy(i<Express>(this, C_SERVER), event, context);
+    return (event, context) => this[C_AWS_SERVERLESS_EXPRESS].proxy(this[C_SERVER], event, context);
   }
 
   get onerror(): ErrorHandlerType | null {
-    return i<ErrorHandlerType | null>(this, C_ERROR_HANDLER);
+    return this[C_ERROR_HANDLER];
   }
 
   set onerror(handler: ErrorHandlerType | null) {
-    s<ErrorHandlerType | null>(this, C_ERROR_HANDLER, handler);
+    this[C_ERROR_HANDLER] = handler;
   }
 
   [C_CALL_ERROR_HANDLER](type: ErrorType, err) {
@@ -151,16 +143,16 @@ export class JsExpressServer {
       if (module['getRootInstanceType']() == ServerModule.ROOT_INSTANCE_TYPE) {
         const serverModule: ServerModule = module as ServerModule;
         serverModule.attachTo(this);
-        i<ServerModule[]>(this, C_SERVER_MODULES).push(serverModule);
+        this[C_SERVER_MODULES].push(serverModule);
         return ;
       }
     }
 
-    return i<Express>(this, C_EXPRESS_APP).use(module);
+    return this[C_EXPRESS_APP].use(module);
   }
 
   start() {
-    i<Express>(this, C_EXPRESS_APP).use((req: Request, res: Response, next) => {
+    this[C_EXPRESS_APP].use((req: Request, res: Response, next) => {
       res.status(404);
       res.send({
         message: 'error.http.not_found',
@@ -168,12 +160,12 @@ export class JsExpressServer {
       });
     });
 
-    if (!i<boolean>(this, C_IS_LAMBDA)) {
-      const settings: Settings = i<Settings>(this, C_SETTINGS);
+    if (!this[C_IS_LAMBDA]) {
+      const settings: Settings = this[C_SETTINGS];
       if (settings.host) {
-        s<http.Server>(this, C_EXPRESS_SERVER, i<Express>(this, C_SERVER).listen(settings.port, settings.host, settings.backlog));
+        this[C_EXPRESS_SERVER] = this[C_SERVER].listen(settings.port, settings.host, settings.backlog);
       } else {
-        s<http.Server>(this, C_EXPRESS_SERVER, i<Express>(this, C_SERVER).listen(settings.port));
+        this[C_EXPRESS_SERVER] = this[C_SERVER].listen(settings.port);
       }
     }
   }
@@ -225,9 +217,9 @@ export class JsExpressServer {
   }
 
   applyRoutes(routes: Route[]) {
-    const settings: Settings = i<Settings>(this, C_SETTINGS);
+    const settings: Settings = this[C_SETTINGS];
     for (const item of routes) {
-      (i<Express>(this, C_EXPRESS_APP))[item.method](settings.apiOriginPath + item.path, this[C_ROUTE_HANDLER].bind(this, item));
+      (this[C_EXPRESS_APP])[item.method](settings.apiOriginPath + item.path, this[C_ROUTE_HANDLER].bind(this, item));
     }
   }
 }
