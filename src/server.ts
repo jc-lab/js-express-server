@@ -15,8 +15,11 @@ const C_SETTINGS = Symbol('SETTINGS');
 const C_SERVER_MODULES = Symbol('SERVER_MODULES');
 const C_ERROR_HANDLER = Symbol('ERROR_HANDLER');
 const C_CALL_ERROR_HANDLER = Symbol('CALL_ERROR_HANDLER');
+const C_CLOSE_HOOKS = Symbol('CLOSE_HANDLERS');
 
 const requestSessionNs = ClsHooked.createNamespace('js-express-request-session');
+
+export type CloseHookHandler = () => PromiseLike<void>;
 
 export type ErrorType = 'request';
 export type ErrorHandlerType = (type: ErrorType, err) => void;
@@ -58,6 +61,8 @@ export class JsExpressServer {
   private [C_SERVER_MODULES]: ServerModule[];
 
   private [C_ERROR_HANDLER]: ErrorHandlerType | null;
+
+  private [C_CLOSE_HOOKS]: CloseHookHandler[] = [];
 
   constructor(settings: Settings) {
     const inLambda = !!process.env.LAMBDA_TASK_ROOT;
@@ -101,10 +106,32 @@ export class JsExpressServer {
     });
   }
 
+  registerCloseHook(handler: CloseHookHandler): void {
+    this[C_CLOSE_HOOKS].push(handler);
+  }
+
   close() {
-    if (!this[C_IS_LAMBDA]) {
-      this[C_EXPRESS_SERVER].close();
-    }
+    this[C_CLOSE_HOOKS].reduce((prev, cur) => {
+      return prev.then(() => new Promise((resolve, reject) => {
+        try {
+          const r = cur();
+          if (typeof r.then === 'function') {
+            const p = r as Promise<any>;
+            p.finally(() => resolve());
+            return ;
+          }
+        } catch (e) {
+          console.error(e);
+          // ignore error
+        }
+        resolve();
+      }));
+    }, Promise.resolve())
+      .finally(() => {
+        if (!this[C_IS_LAMBDA]) {
+          this[C_EXPRESS_SERVER].close();
+        }
+      });
   }
 
   getExpress(): Express {
