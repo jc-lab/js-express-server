@@ -6,7 +6,6 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "npm run test:lint && npm run test:tsc",
-    "postinstall": "npm dedupe && node fix_modules.js",
     "test:lint": "eslint --ext \".js,.ts\" ./src",
     "test:tsc": "tsc --noEmit",
     "fix:lint": "eslint --ext \".js,.ts\" --fix ./src",
