@@ -120,9 +120,9 @@ export function rdbService(config: mysql.PoolConfig): RdbServiceImpl {
   return new RdbServiceImpl(config);
 }
 
-export function getConnectionSafe(handler: (connection: PromissConnection) => void | Promise<void>): Promise<void> {
+export function getConnectionSafe<T>(handler: (connection: PromissConnection) => T | Promise<T>): Promise<T> {
   if (!INSTANCE) {
     throw new Error('rdb-service is not active.');
   }
-  return INSTANCE.getConnectionSafe(handler);
+  return INSTANCE.getConnectionSafe<T>(handler);
 }
