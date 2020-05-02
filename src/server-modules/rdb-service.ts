@@ -79,8 +79,8 @@ export class RdbServiceImpl extends ServerModule {
     this._pool.getConnection(callback);
   }
 
-  getConnectionSafe(handler: (connection: PromissConnection) => void | Promise<void>): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
+  getConnectionSafe<T>(handler: (connection: PromissConnection) => T | Promise<T>): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
       if (!this._pool) {
         reject(Error('Closed pool'));
         return ;
@@ -91,10 +91,6 @@ export class RdbServiceImpl extends ServerModule {
           return;
         }
 
-        let res: any = handler(new PromissConnection(connection));
-        let isAsync = handler.constructor.name === 'AsyncFunction';
-        let isPromise = res && ((typeof res.then) == 'function');
-
         let doRelease = () => {
           const count = (this._pool as any)._freeConnections.indexOf(connection);
           if (count != 0) {
@@ -102,19 +98,18 @@ export class RdbServiceImpl extends ServerModule {
           }
         };
 
-        if (isAsync || isPromise) {
-          Promise.resolve(res)
+        try {
+          Promise.resolve(handler(new PromissConnection(connection)))
             .then((x) => {
-              doRelease();
               resolve(x);
             })
             .catch((e) => {
-              doRelease();
               reject(e);
-            });
-        } else {
+            })
+            .finally(() => doRelease());
+        } catch (e) {
+          reject(e);
           doRelease();
-          resolve(res);
         }
       });
     });
