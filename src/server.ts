@@ -19,7 +19,7 @@ const C_CLOSE_HOOKS = Symbol('CLOSE_HANDLERS');
 
 const requestSessionNs = ClsHooked.createNamespace('js-express-request-session');
 
-export type CloseHookHandler = () => PromiseLike<void>;
+export type CloseHookHandler = () => any | PromiseLike<any>;
 
 export type ErrorType = 'request';
 export type ErrorHandlerType = (type: ErrorType, err) => void;
