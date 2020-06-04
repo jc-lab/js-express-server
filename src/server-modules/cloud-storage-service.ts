@@ -12,7 +12,7 @@ export interface Config {
 
 export type CreationDate = Date;
 
-export type Body = Buffer|Uint8Array|Blob|string|Readable;
+export type Body = Buffer|Uint8Array|string|Readable;
 
 export type GetSignedUrlOperation = 'getObject' | 'putObject';
 
